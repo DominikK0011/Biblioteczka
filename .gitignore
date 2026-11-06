@@ -1,0 +1,17 @@
+.vs/
+**/bin/
+**/obj/
+*.user
+*.slnLaunch.user
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+.env
+.env.*
+!.env.example
+Biblioteczka.API/biblioteczka.db
+Biblioteczka.API/wwwroot/uploads/avatars/*
+!Biblioteczka.API/wwwroot/uploads/avatars/default.jpg
+Biblioteczka.API/wwwroot/uploads/posters/

@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="Biblioteczka.API/Biblioteczka.API.csproj">
+    <BuildDependency Project="Biblioteczka.Core/Biblioteczka.Model.csproj" />
+  </Project>
+  <Project Path="Biblioteczka.Contracts/Biblioteczka.Contracts.csproj" Id="ca775282-f6a6-4024-b73a-097e273a9a8a" />
+  <Project Path="Biblioteczka.Core/Biblioteczka.Model.csproj" />
+  <Project Path="Biblioteczka.DAL/Biblioteczka.DAL.csproj" Id="a336ca2f-7062-40e3-ae36-36e5b968aeb8" />
+  <Project Path="Biblioteczka.Services/Biblioteczka.Services.csproj" Id="030d7169-9308-4e64-91d5-611138671c93" />
+  <Project Path="Biblioteczka.Shared/Biblioteczka.Shared.csproj" Id="dc140ade-f8a0-4db9-86c4-907b4e41bfd5" />
+  <Project Path="Biblioteczka/Biblioteczka.UI.csproj" />
+</Solution>
