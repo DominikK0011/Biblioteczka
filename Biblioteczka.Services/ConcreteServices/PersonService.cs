@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System.Linq.Expressions;
 using AutoMapper;
 using Biblioteczka.API.Data;
 using Biblioteczka.Contracts.DTO;
@@ -9,18 +6,19 @@ using Biblioteczka.Contracts.Request.PersonRequest;
 using Biblioteczka.Model.DataModel;
 using Biblioteczka.Services.Interfaces;
 using Biblioteczka.Shared;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Biblioteczka.Services.ConcreteServices
 {
     public class PersonService : BaseService, IPersonService
     {
-        public PersonService(AppDbContext context, ILogger logger, IMapper mapper) 
+        public PersonService(AppDbContext context, ILogger<PersonService> logger, IMapper mapper) 
             : base(context, logger, mapper)
         {
         }
 
-        public async Task<Result<PersonDto>> AddPerson(AddEditPersonRequest person)
+        public async Task<Result<PersonDto>> AddPersonAsync(AddEditPersonRequest person)
         {
             var p = mapper.Map<Person>(person);
 
@@ -33,30 +31,50 @@ namespace Biblioteczka.Services.ConcreteServices
             return Result<PersonDto>.Success(personDto);
         }
 
-        public async Task<Result<PersonDto>> EditPerson(AddEditPersonRequest person)
+        public async Task<Result<PersonDto>> EditPersonAsync(AddEditPersonRequest personData)
         {
-            var p = mapper.Map<Person>(person);
+            if (!personData.Id.HasValue)
+                return Result<PersonDto>.Failure(new Error.Validation("Id is null in personData to edit"));
 
-            if (person.Id.HasValue)
-                context.People.Update(p);
-            else
-                return Result<PersonDto>.Failure(new Error.Validation("Entity don't have Id"));
+            var existingPerson = await context.People.FirstOrDefaultAsync(person => person.Id == personData.Id.Value);
+
+            if (existingPerson == null)
+                return Result<PersonDto>.Failure(new Error.NotFound(nameof(Person), personData.Id.Value));
+
+            mapper.Map(personData, existingPerson);
 
             await context.SaveChangesAsync();
-
-            var personDto = mapper.Map<PersonDto>(p);
+            var personDto = mapper.Map<PersonDto>(existingPerson);
 
             return Result<PersonDto>.Success(personDto);
         }
 
-        public Task<Result<PersonDto>> GetPerson(Expression<Func<Person, bool>> filterPredicate)
+        public async Task<Result<PersonDto?>> GetPersonAsync(Expression<Func<Person, bool>> filterPredicate)
         {
-            throw new NotImplementedException();
+            if (filterPredicate == null)
+                return Result<PersonDto?>.Failure(new Error.Validation("filter predicate is null"));
+
+            var person = await context.People.FirstOrDefaultAsync(filterPredicate);
+
+            if (person == null)
+                return Result<PersonDto?>.Success(null);
+
+            var personDto = mapper.Map<PersonDto>(person);
+
+            return Result<PersonDto?>.Success(personDto);
         }
 
-        public Task<Result<IEnumerable<PersonDto>>> GetPersons(Expression<Func<Person, bool>>? filterPredicate = null)
+        public async Task<Result<IEnumerable<PersonDto>>> GetPersonsAsync(Expression<Func<Person, bool>>? filterPredicate = null)
         {
-            throw new NotImplementedException();
+            var persons = context.People.AsQueryable();
+
+            if (filterPredicate != null)
+                persons = persons.Where(filterPredicate);
+
+            var personsList = await persons.ToListAsync();
+            var personsDto = mapper.Map<IEnumerable<PersonDto>>(personsList);
+
+            return Result<IEnumerable<PersonDto>>.Success(personsDto);
         }
     }
 }

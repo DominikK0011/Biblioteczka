@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Biblioteczka.Contracts.DTO;
 using Biblioteczka.Contracts.Request;
+using Biblioteczka.Contracts.Request.PersonRequest;
 using Biblioteczka.Model.DataModel;
 
 namespace Biblioteczka.Services.Configuration.AutoMapper
@@ -17,6 +18,9 @@ namespace Biblioteczka.Services.Configuration.AutoMapper
             CreateMap<User, UserDto>();
             CreateMap<RegisterUserRequest, User>();
             CreateMap<UpdateUserRequest, User>();
+
+            CreateMap<Person, PersonDto>();
+            CreateMap<AddEditPersonRequest, Person>();
         }
     }
 }

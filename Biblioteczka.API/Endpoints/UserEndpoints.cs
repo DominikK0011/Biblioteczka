@@ -11,7 +11,9 @@ namespace Biblioteczka.API.Endpoints
     {
         public static void MapUserEndpoints(this WebApplication app)
         {
-            app.MapPost("/api/user/register", async (RegisterUserRequest user, IUserService userService) =>
+            var group = app.MapGroup("/api/user").WithTags("User");
+
+            group.MapPost("/register", async (RegisterUserRequest user, IUserService userService) =>
             {
                 var result = await userService.RegisterUserAsync(user);
 
@@ -21,7 +23,7 @@ namespace Biblioteczka.API.Endpoints
                     );
             });
 
-            app.MapGet("/api/user/{id:int}", async (int id, IUserService userService) =>
+            group.MapGet("/{id:int}", async (int id, IUserService userService) =>
             {
                 var result = await userService.GetUserAsync(u => u.Id == id);
 
@@ -31,7 +33,7 @@ namespace Biblioteczka.API.Endpoints
                     );
             });
 
-            app.MapGet("/api/user/", async (IUserService userService) =>
+            group.MapGet("/", async (IUserService userService) =>
             {
                 var result = await userService.GetUsersAsync();
 
@@ -41,7 +43,7 @@ namespace Biblioteczka.API.Endpoints
                     );
             }).DisableAntiforgery().RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-            app.MapPut("/api/user/{id:int}", async (AddUpdateUserDto updateUser, IUserService userService) =>
+            group.MapPut("/{id:int}", async (AddUpdateUserDto updateUser, IUserService userService) =>
             {
                 var result = await userService.AddUpdateUserAsync(updateUser);
 
@@ -51,7 +53,7 @@ namespace Biblioteczka.API.Endpoints
                     );
             }).DisableAntiforgery().RequireAuthorization();
 
-            app.MapPost("/api/user/login", async (LoginUserRequest loginData, IUserService userService) =>
+            group.MapPost("/login", async (LoginUserRequest loginData, IUserService userService) =>
             {
                 var result = await userService.LoginUserAsync(loginData);
 
@@ -61,7 +63,7 @@ namespace Biblioteczka.API.Endpoints
                         );
             });
 
-            app.MapPost("/api/user/avatar", async(IFormFile file, ClaimsPrincipal user, IUserService userService) =>
+            group.MapPost("/avatar", async(IFormFile file, ClaimsPrincipal user, IUserService userService) =>
             {
                 var response = await userService.SetAvatarToUserAsync(file, user);
 

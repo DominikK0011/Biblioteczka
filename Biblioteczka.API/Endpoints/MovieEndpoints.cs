@@ -8,14 +8,16 @@ namespace Biblioteczka.API.Endpoints
     {
         public static void MapMovieEndpoints(this WebApplication app)
         {
-            app.MapGet("/api/movies", async (IMovieService movieService) => 
+            var group = app.MapGroup("/api/movies").WithTags("Movie");
+
+            group.MapGet("/", async (IMovieService movieService) => 
             {
                 var movies = await movieService.GetMovies();
 
                 return Results.Ok(movies);
             });
 
-            app.MapPost("/api/movies", async (AddUpdateMovieDto addUpdateMovie, IMovieService movieService) =>
+            group.MapPost("/", async (AddUpdateMovieDto addUpdateMovie, IMovieService movieService) =>
             {
 
                 var result = await movieService.AddUpdateMovieDto(addUpdateMovie);
@@ -26,14 +28,14 @@ namespace Biblioteczka.API.Endpoints
                     );
             }).DisableAntiforgery().RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-            app.MapGet("/api/movies/{id:int}", async (int id, IMovieService movieService) =>
+            group.MapGet("/{id:int}", async (int id, IMovieService movieService) =>
             {
                 var movie = await movieService.GetMovie(m => m.Id == id);
 
                 return Results.Ok(movie);
             });
 
-            app.MapPost("/api/movies/poster", async (IFormFile file, ClaimsPrincipal user, IMovieService movieService) =>
+            group.MapPost("/poster", async (IFormFile file, ClaimsPrincipal user, IMovieService movieService) =>
             {
                 var result = await movieService.AddPosterAsync(file, user);
 

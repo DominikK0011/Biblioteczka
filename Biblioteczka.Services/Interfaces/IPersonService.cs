@@ -11,9 +11,9 @@ namespace Biblioteczka.Services.Interfaces
 {
     public interface IPersonService
     {
-        public Task<Result<PersonDto>> AddPerson(AddEditPersonRequest person);
-        public Task<Result<PersonDto>> GetPerson(Expression<Func<Person,bool>> filterPredicate);
-        public Task<Result<IEnumerable<PersonDto>>> GetPersons(Expression<Func<Person, bool>>? filterPredicate = null);
-        public Task<Result<PersonDto>> EditPerson(AddEditPersonRequest person);
+        public Task<Result<PersonDto>> AddPersonAsync(AddEditPersonRequest person);
+        public Task<Result<PersonDto?>> GetPersonAsync(Expression<Func<Person,bool>> filterPredicate);
+        public Task<Result<IEnumerable<PersonDto>>> GetPersonsAsync(Expression<Func<Person, bool>>? filterPredicate = null);
+        public Task<Result<PersonDto>> EditPersonAsync(AddEditPersonRequest person);
     }
 }

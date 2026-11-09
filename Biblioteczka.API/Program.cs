@@ -8,12 +8,42 @@ using Biblioteczka.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi( options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        var securityScheme = new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Description = "token",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            BearerFormat = "JWT"
+        };
+
+        document.Components ??= new OpenApiComponents();
+
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = securityScheme;
+
+        var schemeReference = new OpenApiSecuritySchemeReference("Bearer", document);
+
+        document.Security ??= new List<OpenApiSecurityRequirement>();
+        document.Security.Add(new OpenApiSecurityRequirement
+        {
+            {schemeReference, new List<string>() }
+        });
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddDbContext<AppDbContext>(
     options => options.UseSqlite("Data Source=biblioteczka.db")
     );
@@ -23,6 +53,7 @@ builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IPersonService, PersonService>();
 
 builder.Services.AddAuthentication(options => 
     {
@@ -78,6 +109,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
@@ -87,4 +119,6 @@ app.UseStaticFiles();
 
 app.MapUserEndpoints();
 app.MapMovieEndpoints();
+app.MapPersonEndpoints();
+
 app.Run();
