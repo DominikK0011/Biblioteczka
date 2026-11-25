@@ -77,6 +77,9 @@ namespace Biblioteczka.UI.Service.ConcreteServices
 
         public async Task<Result<string>> UploadFileAsync(string endpoint, string filePath)
         {
+            if (string.IsNullOrEmpty(filePath))
+                return Result<string>.Failure(new Error.Validation("File path is null or empty"));
+
             var s=
         $"Authorization set: " +
         $"{_httpClient.DefaultRequestHeaders.Authorization != null}";

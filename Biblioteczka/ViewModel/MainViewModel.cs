@@ -99,6 +99,10 @@ namespace Biblioteczka.UI.ViewModel
         public async Task ChangeAvatarAsync()
         {
             var filePath = await SelectPhotoAsync();
+
+            if (string.IsNullOrWhiteSpace(filePath))
+                return;
+
             var response = await _userService.ChangeAvatarAsync(filePath);
 
             response.Match(
