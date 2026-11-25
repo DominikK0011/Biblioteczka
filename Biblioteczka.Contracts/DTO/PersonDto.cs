@@ -13,7 +13,7 @@ namespace Biblioteczka.Contracts.DTO
         public UserRole Role { get; set; }
         public DateOnly BirthDay { get; set; }
         public string PhotoUrl { get; set; }
-        public IList<Movie>? MovieDirector { get; set; }
-        public IList<Movie>? MovieActor { get; set; }
+        public IList<MovieDto>? MovieDirector { get; set; }
+        public IList<MovieDto>? MovieActor { get; set; }
     }
 }

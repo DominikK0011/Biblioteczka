@@ -14,9 +14,9 @@ namespace Biblioteczka.Contracts.DTO
         public double Rating { get; set; }
         public string PosterUrl { get; set; }
         public AgeRating AgeRating { get; set; }
-        public Person Director { get; set; }
+        public PersonDto Director { get; set; }
         public int DirectorId { get; set; }
-        public IList<Person>? Actors { get; set; }
-        public IList<Review>? Reviews { get; set; }
+        public IList<PersonDto>? Actors { get; set; }
+        public IList<ReviewDto>? Reviews { get; set; }
     }
 }

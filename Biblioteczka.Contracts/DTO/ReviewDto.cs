@@ -11,12 +11,12 @@ namespace Biblioteczka.Contracts.DTO
         public int? Score { get; set; }
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; }
-        public Movie Movie { get; set; }
+        public MovieDto Movie { get; set; }
         public int MovieId { get; set; }
-        public User User { get; set; }
+        public UserDto User { get; set; }
         public int UserId { get; set; }
-        public Review? ParentReview { get; set; }
+        public ReviewDto? ParentReview { get; set; }
         public int? ParentReviewId { get; set; }
-        public IList<Review>? Replies { get; set; }
+        public IList<ReviewDto>? Replies { get; set; }
     }
 }
