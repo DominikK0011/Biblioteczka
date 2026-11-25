@@ -24,40 +24,40 @@ namespace Biblioteczka.Services.ConcreteServices
             _fileService = fileService;
         }
 
-        public async Task<Result<UserDto>> AddUpdateUserAsync(AddUpdateUserDto addUpdateUser)
+        //public async Task<Result<UserDto>> AddUpdateUserAsync(AddUpdateUserDto addUpdateUser)
+        //{
+        //    var user = mapper.Map<User>(addUpdateUser);
+
+        //    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(addUpdateUser.Password);
+
+        //    if (addUpdateUser.Id.HasValue)
+        //    {
+        //        context.Users.Update(user);
+        //    }
+        //    else
+        //    {
+        //        if (context.Users.Any(u => u.Email == addUpdateUser.Email))
+        //            return Result<UserDto>.Failure(new Error.Validation("Email already exist"));
+
+        //        if (context.Users.Any(u => u.Username == addUpdateUser.Username))
+        //            return Result<UserDto>.Failure(new Error.Validation("Username already exist"));
+
+        //        await context.Users.AddAsync(user);
+        //    }
+
+        //    await context.SaveChangesAsync();
+        //    var userDto = mapper.Map<UserDto>(user);
+
+        //    return Result<UserDto>.Success(userDto);
+        //}
+
+        public async Task<Result<UserDto>> GetUserAsync(int id)
         {
-            var user = mapper.Map<User>(addUpdateUser);
-
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(addUpdateUser.Password);
-
-            if (addUpdateUser.Id.HasValue)
-            {
-                context.Users.Update(user);
-            }
-            else
-            {
-                if (context.Users.Any(u => u.Email == addUpdateUser.Email))
-                    return Result<UserDto>.Failure(new Error.Validation("Email already exist"));
-
-                if (context.Users.Any(u => u.Username == addUpdateUser.Username))
-                    return Result<UserDto>.Failure(new Error.Validation("Username already exist"));
-
-                context.Users.Add(user);
-            }
-
-            await context.SaveChangesAsync();
-            var userDto = mapper.Map<UserDto>(user);
-
-            return Result<UserDto>.Success(userDto);
-        }
-
-        public async Task<Result<UserDto>> GetUserAsync(Expression<Func<User, bool>> filterPredicate)
-        {
-            var user = await context.Users.FirstOrDefaultAsync(filterPredicate);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {
-                return Result<UserDto>.Failure(new Error.Validation($"Not found user with predicate {filterPredicate.ToString()}"));
+                return Result<UserDto>.Failure(new Error.NotFound(nameof(User),id));
             }
 
             var userDto = mapper.Map<UserDto>(user);
@@ -109,30 +109,33 @@ namespace Biblioteczka.Services.ConcreteServices
 
         public async Task<Result<bool>> RegisterUserAsync(RegisterUserRequest userData)
         {
-            if (context.Users.Any(u => u.Email == userData.Email))
-                return Result<bool>.Failure(new Error.Validation("Email already exists"));
+            if (await context.Users.AnyAsync(u => u.Email == userData.Email))
+                return Result<bool>.Failure(new Error.Conflict("Email already exists"));
 
-            if (context.Users.Any(u => u.Username == userData.Username))
-                return Result<bool>.Failure(new Error.Validation("Username already exists"));
+            if (await context.Users.AnyAsync(u => u.Username == userData.Username))
+                return Result<bool>.Failure(new Error.Conflict("Username already exists"));
 
             var user = mapper.Map<User>(userData);
 
             user.AvatarUrl = "uploads/avatars/default.jpg";
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
 
-            context.Users.Add(user);
+            await context.Users.AddAsync(user);
 
             await context.SaveChangesAsync();
 
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<UserDto>> UpdateUserDataAsync(int id,UpdateUserRequest userData)
+        public async Task<Result<UserDto>> UpdateUserDataAsync(int id, UpdateUserRequest userData)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
                 return Result<UserDto>.Failure(new Error.NotFound(nameof(User), id));
+
+            if ( await context.Users.AnyAsync(user => (user.Email == userData.Email || user.Username == userData.Username) && user.Id != id))
+                return Result<UserDto>.Failure(new Error.Conflict("Email or Username is reserved"));
 
             user.Username = userData.Username;
             user.Email = userData.Email;

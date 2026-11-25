@@ -11,8 +11,8 @@ namespace Biblioteczka.Services.Interfaces
 {
     public interface IUserService
     {
-        public Task<Result<UserDto>> AddUpdateUserAsync(AddUpdateUserDto addUpdateUser);
-        public Task<Result<UserDto>> GetUserAsync(Expression<Func<User, bool>> filterPredicate);
+        //public Task<Result<UserDto>> AddUpdateUserAsync(AddUpdateUserDto addUpdateUser);
+        public Task<Result<UserDto>> GetUserAsync(int id);
         public Task<Result<IEnumerable<UserDto>>> GetUsersAsync(Expression<Func<User, bool>>? filterPredicate = null);
        
         public Task<Result<bool>> RegisterUserAsync(RegisterUserRequest userData);

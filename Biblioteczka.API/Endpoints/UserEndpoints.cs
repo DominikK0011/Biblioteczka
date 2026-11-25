@@ -1,9 +1,8 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using System.Security.Claims;
-using Biblioteczka.Contracts.DTO;
+﻿using System.Security.Claims;
 using Biblioteczka.Contracts.Request;
 using Biblioteczka.Contracts.Response;
 using Biblioteczka.Services.Interfaces;
+using Biblioteczka.Shared;
 
 namespace Biblioteczka.API.Endpoints
 {
@@ -19,13 +18,18 @@ namespace Biblioteczka.API.Endpoints
 
                 return result.Match(
                     onSuccess: _ => Results.Created(),
-                    onFailure: error => Results.UnprocessableEntity(new {message = error.Message})
+                    onFailure: error =>
+                    {
+                        if (error is Error.Conflict)
+                            return Results.Conflict(new { message = error.Message });
+                        return Results.BadRequest();
+                    }
                     );
             });
 
             group.MapGet("/{id:int}", async (int id, IUserService userService) =>
             {
-                var result = await userService.GetUserAsync(u => u.Id == id);
+                var result = await userService.GetUserAsync(id);
 
                 return result.Match(
                     onSuccess: user => Results.Ok(user),
@@ -43,13 +47,20 @@ namespace Biblioteczka.API.Endpoints
                     );
             }).DisableAntiforgery().RequireAuthorization(policy => policy.RequireRole("Admin"));
 
-            group.MapPut("/{id:int}", async (AddUpdateUserDto updateUser, IUserService userService) =>
+            group.MapPut("/{id:int}", async (int id, UpdateUserRequest updateUser, IUserService userService) =>
             {
-                var result = await userService.AddUpdateUserAsync(updateUser);
+                var result = await userService.UpdateUserDataAsync(id, updateUser);
 
                 return result.Match(
                     onSuccess: user => Results.Ok(user),
-                    onFailure: error => Results.BadRequest(error.Message)
+                    onFailure: error =>
+                    {
+                        if (error is Error.Conflict)
+                            return Results.Conflict(new { message = error.Message });
+                        else if (error is Error.NotFound)
+                            return Results.NotFound(new { message = error.Message });
+                        return Results.BadRequest();
+                    }
                     );
             }).DisableAntiforgery().RequireAuthorization();
 
@@ -69,7 +80,14 @@ namespace Biblioteczka.API.Endpoints
 
                 return response.Match(
                     onSuccess: url => Results.Ok(new AvatarUrlResponse(url)),
-                    onFailure: err => Results.BadRequest(new { message = err.Message })
+                    onFailure: error =>
+                    {
+                        if (error is Error.Conflict)
+                            return Results.Conflict(new { message = error.Message });
+                        else if (error is Error.NotFound)
+                            return Results.NotFound(new { message = error.Message });
+                        return Results.BadRequest();
+                    }
                     );
             }).DisableAntiforgery().RequireAuthorization();
         }

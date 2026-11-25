@@ -13,6 +13,7 @@ namespace Biblioteczka.Services.Configuration.AutoMapper
             CreateMap<Movie, MovieDto>();
 
             CreateMap<AddUpdateMovieDto, Movie>();
+            CreateMap<AddMovieRequest, Movie>();
 
             CreateMap<AddUpdateUserDto, User>();
             CreateMap<User, UserDto>();

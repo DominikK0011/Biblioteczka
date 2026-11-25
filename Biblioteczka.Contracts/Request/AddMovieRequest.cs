@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Biblioteczka.Contracts.DTO;
-using Biblioteczka.Model.DataModel;
+﻿using Biblioteczka.Model.DataModel;
 
 namespace Biblioteczka.Contracts.Request
 {
@@ -13,7 +9,7 @@ namespace Biblioteczka.Contracts.Request
         public DateOnly ReleaseDate { get; set; }
         public string PosterUrl { get; set; }
         public AgeRating AgeRating { get; set; }
-        public PersonDto Director { get; set; }
-        public IList<PersonDto>? Actors { get; set; }
+        public int DirectorId { get; set; }
+        public IList<int>? ActorIds { get; set; }
     }
 }

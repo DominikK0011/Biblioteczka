@@ -22,7 +22,7 @@ namespace Biblioteczka.Services.ConcreteServices
         {
             var p = mapper.Map<Person>(person);
 
-            context.People.Add(p);
+            await context.People.AddAsync(p);
 
             await context.SaveChangesAsync();
 

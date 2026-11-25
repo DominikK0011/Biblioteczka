@@ -13,8 +13,8 @@ namespace Biblioteczka.Services.Interfaces
 {
     public interface IMovieService
     {
-        public Task<Result<MovieDto>> AddUpdateMovieDto(AddUpdateMovieDto addUpdateMovieDto);
-        public Task<Result<MovieDto>> GetMovie(Expression<Func<Movie, bool>> filterExpression);
+        public Task<Result<MovieDto>> AddMovieDto(AddMovieRequest addMovieRequest);
+        public Task<Result<MovieDto>> GetMovie(int id);
         public Task<IEnumerable<MovieDto>> GetMovies(Expression<Func<Movie, bool>>? filterExpression = null);
         public Task<Result<string>> AddPosterAsync(IFormFile file, ClaimsPrincipal adminToken);
     }

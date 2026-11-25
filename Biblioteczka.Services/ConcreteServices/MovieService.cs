@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Text;
 using AutoMapper;
 using Biblioteczka.API.Data;
 using Biblioteczka.Contracts.DTO;
@@ -39,17 +36,32 @@ namespace Biblioteczka.Services.ConcreteServices
                 );
         }
 
-        public async Task<Result<MovieDto>> AddUpdateMovieDto(AddUpdateMovieDto addUpdateMovieDto)
+        public async Task<Result<MovieDto>> AddMovieDto(AddMovieRequest addMovieRequest)
         {
-            var movie = mapper.Map<Movie>(addUpdateMovieDto);
-            if (addUpdateMovieDto.Id == null)
+            var movie = mapper.Map<Movie>(addMovieRequest);
+            var director = await context.People.FirstOrDefaultAsync(d => d.Id == addMovieRequest.DirectorId);
+
+            if (director == null)
+                return Result<MovieDto>.Failure(new Error.NotFound(nameof(Person), addMovieRequest.DirectorId));
+
+            movie.Director = director;
+
+            if (addMovieRequest.ActorIds != null)
             {
-                context.Movies.Add(movie);
+                var actorIds = addMovieRequest.ActorIds.Distinct().ToList();
+                var actors = await context.People.Where(p => actorIds.Contains(p.Id)).ToListAsync();
+
+                if (actorIds.Count != actors.Count)
+                {
+                    int idNotFoundedActor = actorIds.Except(actors.Select(actor => actor.Id)).First();
+                    
+                    return Result<MovieDto>.Failure(new Error.NotFound(nameof(Person), idNotFoundedActor));
+                }
+
+                movie.Actors = actors;
             }
-            else
-            {
-                context.Movies.Update(movie);
-            }
+            await context.Movies.AddAsync(movie);
+           
             await context.SaveChangesAsync();
 
             var movieDto = mapper.Map<MovieDto>(movie);
@@ -57,12 +69,16 @@ namespace Biblioteczka.Services.ConcreteServices
             return Result<MovieDto>.Success(movieDto);
         }
 
-        public async Task<Result<MovieDto>> GetMovie(Expression<Func<Movie, bool>> filterExpression)
+        public async Task<Result<MovieDto>> GetMovie(int id)
         {
-            var movie = await context.Movies.FirstOrDefaultAsync(filterExpression);
+            var movie = await context.Movies
+                .Include(m => m.Actors)
+                .Include(m => m.Director)
+                //.Include(m => m.Reviews)
+                .FirstOrDefaultAsync(m => m.Id == id);
             
             if (movie == null)
-                return Result<MovieDto>.Failure(new Error.Validation("User not found"));
+                return Result<MovieDto>.Failure(new Error.NotFound(nameof(Movie).ToString(), id));
             
             var movieDto = mapper.Map<MovieDto>(movie);
 
@@ -71,14 +87,20 @@ namespace Biblioteczka.Services.ConcreteServices
 
         public async Task<IEnumerable<MovieDto>> GetMovies(Expression<Func<Movie, bool>>? filterExpression = null)
         {
-            var movies = context.Movies.AsQueryable();
+            var movies = context.Movies
+                .Include(m => m.Actors)
+                .Include(m => m.Director)
+                //.Include(m => m.Reviews)
+                .AsQueryable();
 
             if(filterExpression != null)
                 movies = movies.Where(filterExpression);
+            var moviesEntities = await movies.ToListAsync();
 
-            var moviesDto = mapper.Map<List<MovieDto>>(movies);
+            var moviesDto = mapper.Map<List<MovieDto>>(moviesEntities);
 
             return moviesDto;
         }
     }
 }
+//TODO: Change ReviewDto to simple contract, then test comment code
