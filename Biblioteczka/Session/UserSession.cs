@@ -33,6 +33,7 @@ namespace Biblioteczka.UI.Session
             if(ActualUser != null)
             {
                 ActualUser.AvatarUrl = avatarUrl;
+                SessionChanged?.Invoke();
             }
         }
     }

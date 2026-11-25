@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Navigation;
-using Biblioteczka.Contracts.DTO;
-using Biblioteczka.Contracts.Request;
+﻿using Biblioteczka.Contracts.Request;
 using Biblioteczka.Contracts.Response;
 using Biblioteczka.Shared;
 using Biblioteczka.UI.Service.Interfaces;
@@ -26,7 +20,10 @@ namespace Biblioteczka.UI.Service.ConcreteServices
             var response = await _apiGateway.UploadFileAsync("api/user/avatar", avatarPath);
 
             return response.Match(
-                onSuccess: url => Result<string>.Success(url),
+                onSuccess: url => {
+                    string fullUrl = _apiGateway.GetFileUrl(url);
+                    return Result<string>.Success(fullUrl);
+                    },
                 onFailure: err => Result<string>.Failure(err)
                 );
         }
