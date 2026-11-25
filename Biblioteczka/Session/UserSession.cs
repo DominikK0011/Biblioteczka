@@ -36,5 +36,10 @@ namespace Biblioteczka.UI.Session
                 SessionChanged?.Invoke();
             }
         }
+        public static void UpdateUser(UserDto user)
+        {
+            ActualUser = user;
+            SessionChanged?.Invoke();
+        }
     }
 }

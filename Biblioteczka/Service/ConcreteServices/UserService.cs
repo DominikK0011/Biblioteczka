@@ -1,4 +1,5 @@
-﻿using Biblioteczka.Contracts.Request;
+﻿using Biblioteczka.Contracts.DTO;
+using Biblioteczka.Contracts.Request;
 using Biblioteczka.Contracts.Response;
 using Biblioteczka.Shared;
 using Biblioteczka.UI.Service.Interfaces;
@@ -54,6 +55,32 @@ namespace Biblioteczka.UI.Service.ConcreteServices
                 onFailure: error => 
                 {
                     return Result<bool>.Failure(error); 
+                }
+                );
+        }
+
+        public async Task<Result<UserDto>> UpdateUserAsync(UpdateUserRequest updateUserRequest)
+        {
+            if (!UserSession.IsLogged || UserSession.ActualUser == null)
+                return Result<UserDto>.Failure(new Error.Conflict("User is not logged"));
+
+            var response = await _apiGateway.PutAsync<UserDto>($"/api/user/{UserSession.ActualUser.Id}", updateUserRequest);
+
+            return response.Match(
+                onSuccess: userDto =>
+                {
+                    if(userDto == null)
+                        return Result<UserDto>.Failure(new Error.Conflict("User is null"));
+
+                    userDto.AvatarUrl = _apiGateway.GetFileUrl(userDto.AvatarUrl);
+                    
+                    UserSession.UpdateUser(userDto);
+
+                    return Result<UserDto>.Success(userDto);
+                },
+                onFailure: error =>
+                {
+                    return Result<UserDto>.Failure(error);
                 }
                 );
         }

@@ -12,5 +12,6 @@ namespace Biblioteczka.UI.Service.Interfaces
         public Task<Result<bool>> RegisterUserAsync(RegisterUserRequest userdto);
         public Task<Result<bool>> LoginUserAsync(LoginUserRequest userLoginDto);
         public Task<Result<string>> ChangeAvatarAsync(string avatarPath);
+        public Task<Result<UserDto>> UpdateUserAsync(UpdateUserRequest updateUserRequest);
     }
 }

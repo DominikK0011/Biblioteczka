@@ -66,7 +66,6 @@ namespace Biblioteczka.UI.ViewModel
             result.Match(
                 onSuccess: _ => {
                     ErrorMessage = "Register Succesfull";
-                    Thread.Sleep(500);
                     _windowService.ShowLoginWindow();
                     return true;
                 },

@@ -108,5 +108,19 @@ namespace Biblioteczka.UI.Service.ConcreteServices
 
             return Result<string>.Success(result.url);
         }
+
+        public async Task<Result<T?>> PutAsync<T>(string endpoint, object data)
+        {
+            var response = await _httpClient.PutAsJsonAsync(endpoint, data);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorJson = await response.Content.ReadAsStringAsync();
+                return Result<T?>.Failure(new Error.Validation(errorJson));
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<T?>();
+            return Result<T?>.Success(result);
+        }
     }
 }
